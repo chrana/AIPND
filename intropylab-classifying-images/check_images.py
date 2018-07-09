@@ -3,8 +3,8 @@
 # */AIPND/intropylab-classifying-images/check_images.py
 #                                                                             
 # TODO: 0. Fill in your information in the programming header below
-# PROGRAMMER:
-# DATE CREATED:
+# PROGRAMMER: Chirag R.
+# DATE CREATED: July 9th 2018
 # REVISED DATE:             <=(Date Revised - if any)
 # REVISED DATE: 05/14/2018 - added import statement that imports the print 
 #                           functions that can be used to check the lab
@@ -21,7 +21,7 @@
 
 # Imports python modules
 import argparse
-from time import time, sleep
+from time import time, sleep, strftime, gmtime
 from os import listdir
 
 # Imports classifier function for using CNN to classify images 
@@ -34,16 +34,23 @@ from print_functions_for_lab_checks import *
 def main():
     # TODO: 1. Define start_time to measure total program runtime by
     # collecting start time
-    start_time = None
+    start_time = time()
     
     # TODO: 2. Define get_input_args() function to create & retrieve command
     # line arguments
     in_arg = get_input_args()
-    
+    print("\n==============Printing Command Line Arguments==============\n")
+    print("1. --dir: {}".format(in_arg.dir))
+    print("2. --arch: {}".format(in_arg.arch))
+    print("3. --dogfile: {}".format(in_arg.dogfile))    
+
     # TODO: 3. Define get_pet_labels() function to create pet image labels by
     # creating a dictionary with key=filename and value=file label to be used
     # to check the accuracy of the classifier function
-    answers_dic = get_pet_labels()
+    answers_dic = get_pet_labels(in_arg.dir)
+    print("\n==============Printing All Pet Labels==============\n")
+    for answer in answers_dic:
+        print("Key: {} \t Value: {}".format(answer,answers_dic[answer]))            
 
     # TODO: 4. Define classify_images() function to create the classifier 
     # labels with the classifier function uisng in_arg.arch, comparing the 
@@ -67,13 +74,12 @@ def main():
 
     # TODO: 1. Define end_time to measure total program runtime
     # by collecting end time
-    end_time = None
+    end_time = time()
 
     # TODO: 1. Define tot_time to computes overall runtime in
     # seconds & prints it in hh:mm:ss format
-    tot_time = None
-    print("\n** Total Elapsed Runtime:", tot_time)
-
+    tot_time = end_time - start_time
+    print("\n** Total Elapsed Runtime:", strftime('%H:%M:%S', gmtime(tot_time)))
 
 
 # TODO: 2.-to-7. Define all the function below. Notice that the input 
@@ -98,10 +104,22 @@ def get_input_args():
     Returns:
      parse_args() -data structure that stores the command line arguments object  
     """
-    pass
+    # Creates Argument Parser object named parser
+    parser = argparse.ArgumentParser()
+
+    # Argument 1: Path to the pet image files
+    parser.add_argument('--dir', type = str, default = 'pet_images/', help = 'Path to the pet image files')
+
+    # Argument 2: CNN model architecture to use for image classification
+    parser.add_argument('--arch', type = str, default = 'resnet', help = 'CNN model architecture to use for image classification')
+
+    # Argument 3: Text file that contains all labels associated to dogs
+    parser.add_argument('--dogfile', type = str, default = 'dognames.txt', help = 'Text file that contains all labels associated to dogs')
+
+    return parser.parse_args()
 
 
-def get_pet_labels():
+def get_pet_labels(image_dir):
     """
     Creates a dictionary of pet labels based upon the filenames of the image 
     files. Reads in pet filenames and extracts the pet image labels from the 
@@ -114,7 +132,22 @@ def get_pet_labels():
      petlabels_dic - Dictionary storing image filename (as key) and Pet Image
                      Labels (as value)  
     """
-    pass
+    petlabel_dic = dict()
+
+    #Looping through all the unique filenames to fill up the dictionary.
+    for file in listdir(image_dir):
+        pet_name = ""
+        #Breed Labels are split by underscore(_) to support multiple lbaels.
+        #In dictionary multiple labels are just saved with a space in between
+        for word in file.lower().split("_"):
+            if word.isalpha():
+                pet_name += word + " "
+        if file not in petlabel_dic:
+            petlabel_dic[file] = pet_name.strip()
+        else:
+            print("Duplicate detected. {} key already exists".format(file))
+
+    return petlabel_dic
 
 
 def classify_images():
